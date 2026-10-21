@@ -1,6 +1,24 @@
-<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Ma tournée</title>
-<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="theme-color" content="#EBEFF2" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0E161D" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Ma tournée">
+<meta name="description" content="Décode le mail de tournée : magasins, heure de départ, tracteur, chargement.">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" href="icon-192.png">
+<style>
+html{color-scheme:light;-webkit-text-size-adjust:100%;padding-bottom:env(safe-area-inset-bottom,0px)}
+body{margin:0}
+[hidden]{display:none!important}
+</style>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@600;700&family=IBM+Plex+Mono:wght@500&display=swap">
 <style>
 /* Layout: one narrow column, built for a phone held in one hand.
@@ -71,6 +89,7 @@ button.primary{background:var(--accent);border-color:var(--accent);color:var(--a
 .badge{font-family:var(--display);font-weight:700;font-size:1.3rem;letter-spacing:.02em}
 .badge.none{font-family:var(--body);font-weight:500;font-size:.85rem;letter-spacing:0;opacity:.75}
 #out{display:flex;flex-direction:column;gap:24px}
+#out>*{scroll-margin-top:12px}
 .tournav{display:flex;flex-wrap:wrap;gap:8px}
 .tournav button{min-height:40px}
 .voyage{margin:2px 0 0;font-size:.85rem;color:var(--muted)}
@@ -122,6 +141,8 @@ details.settings summary{cursor:pointer;padding:14px 16px;font-weight:600;min-he
 }
 </style>
 
+</head>
+<body>
 <main class="wrap">
   <header>
     <h1>Ma tournée</h1>
@@ -129,11 +150,11 @@ details.settings summary{cursor:pointer;padding:14px 16px;font-weight:600;min-he
   </header>
 
   <section class="field">
-    <label for="mail">Mail de la tournée</label>
-    <textarea id="mail" rows="6" spellcheck="false" autocapitalize="off" autocomplete="off"></textarea>
+    <label for="tournee">Tournée reçue</label>
+    <textarea id="tournee" name="tournee-texte" rows="6" spellcheck="false" autocapitalize="off" autocorrect="off" autocomplete="off" enterkeyhint="enter" placeholder="Collez ici la tournée reçue"></textarea>
     <div class="row">
       <button type="button" id="clear">Effacer</button>
-      <p class="note" id="exampleNote">Exemple affiché. Collez votre mail pour le remplacer.</p>
+      <p class="note" id="exampleNote"></p>
     </div>
   </section>
 
@@ -143,7 +164,7 @@ details.settings summary{cursor:pointer;padding:14px 16px;font-weight:600;min-he
     <summary>Mes magasins et mes chargements</summary>
     <div class="settings-body">
       <div class="field">
-        <label for="storesBox">Magasins et lieux (un par ligne : numéro ou texte du mail;enseigne;ville)</label>
+        <label for="storesBox">Magasins et lieux (un par ligne : numéro ou texte reçu;enseigne;ville)</label>
         <textarea id="storesBox" rows="8" spellcheck="false" autocapitalize="off" placeholder="04371;Enseigne;Ville"></textarea>
       </div>
       <div class="field">
@@ -162,7 +183,7 @@ details.settings summary{cursor:pointer;padding:14px 16px;font-weight:600;min-he
 
 <script>
 (function(){
-  var SAMPLE = "AUVRAY Rémi : Tracteur : 121\nHeure Départ : 00h01 : F : 04371-50172-50291-04106-04376-10910-04854\nN° Voyage :\nContacter ENTA Erbrée 02.99.49.90.46 Neulliac 02.97.08.60.85";
+  var SAMPLE = "";
   var K_STORES = 'tournee.stores', K_LOADS = 'tournee.loads';
 
   function load(k){ try { var v = localStorage.getItem(k); return v ? JSON.parse(v) : {}; } catch(e){ return {}; } }
@@ -338,13 +359,13 @@ N 55248 DOUARNENEZ
   var DEFAULT_LOADS = { F:'Frais', S:'Sec', G:'Gel' };
   var loads  = Object.assign({}, DEFAULT_LOADS, load(K_LOADS));    // { "F": "nom" }
 
-  var mail = document.getElementById('mail');
+  var mail = document.getElementById('tournee');
   var out = document.getElementById('out');
   var exampleNote = document.getElementById('exampleNote');
   var storesBox = document.getElementById('storesBox');
   var loadsBox = document.getElementById('loadsBox');
   var settingsNote = document.getElementById('settingsNote');
-  var isExample = true;
+  var isExample = false;
 
   function h(tag, cls, text){
     var e = document.createElement(tag);
@@ -513,7 +534,7 @@ N 55248 DOUARNENEZ
       var box = h('div','unknown');
       box.appendChild(h('p',null,'Le code de chargement « ' + tour.loadCode + ' » n’a pas encore de nom.'));
       var r = h('div','row');
-      var inp = h('input'); inp.type='text'; inp.id='loadName-'+tour.loadCode; inp.placeholder='Nom du chargement'; inp.setAttribute('aria-label','Nom du chargement ' + tour.loadCode);
+      var inp = h('input'); inp.type='text'; inp.setAttribute('autocomplete','off'); inp.name='x-load'; inp.id='loadName-'+tour.loadCode; inp.placeholder='Nom du chargement'; inp.setAttribute('aria-label','Nom du chargement ' + tour.loadCode);
       var b = h('button',null,'Enregistrer'); b.type='button';
       b.addEventListener('click', function(){
         var v = inp.value.trim(); if (!v) { inp.focus(); return; }
@@ -550,8 +571,8 @@ N 55248 DOUARNENEZ
         box.appendChild(h('p',null,(isNum ? 'Le magasin ' + raw : '\u00AB ' + raw + ' \u00BB') + ' n\u2019est pas encore dans votre liste.'));
         var r = h('div','row');
         var safe = key.replace(/\W/g,'_');
-        var ie = h('input'); ie.type='text'; ie.id='ens-'+safe; ie.placeholder='Enseigne'; ie.setAttribute('aria-label','Enseigne de ' + raw);
-        var iv = h('input'); iv.type='text'; iv.id='ville-'+safe; iv.placeholder='Ville'; iv.setAttribute('aria-label','Ville de ' + raw);
+        var ie = h('input'); ie.type='text'; ie.setAttribute('autocomplete','off'); ie.name='x-'+safe+'-a'; ie.id='ens-'+safe; ie.placeholder='Enseigne'; ie.setAttribute('aria-label','Enseigne de ' + raw);
+        var iv = h('input'); iv.type='text'; iv.setAttribute('autocomplete','off'); iv.name='x-'+safe+'-b'; iv.id='ville-'+safe; iv.placeholder='Ville'; iv.setAttribute('aria-label','Ville de ' + raw);
         var b = h('button',null,'Ajouter'); b.type='button';
         b.addEventListener('click', function(){
           var e = ie.value.trim(), v = iv.value.trim();
@@ -689,9 +710,40 @@ N 55248 DOUARNENEZ
     mail.value = ''; isExample = false; exampleNote.textContent = ''; render(); mail.focus();
   });
 
+  // Après un collage : une fois le texte bien arrivé dans la zone, le clavier se ferme et la page descend sur la tournée.
+  var lastLen = 0;
+  mail.addEventListener('input', function(e){
+    var jump = mail.value.length - lastLen;
+    lastLen = mail.value.length;
+    var pasted = (e && e.inputType === 'insertFromPaste') || jump > 25;
+    if (!pasted || !out.querySelector('.tour')) return;
+    setTimeout(function(){
+      mail.blur();
+      setTimeout(function(){
+        var first = out.firstElementChild;
+        if (!first) return;
+        var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        first.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
+      }, 250);
+    }, 150);
+  });
+
+  // Chaque fois qu'on revient sur la page, elle repart de zéro.
+  var wasHidden = false;
+  function resetAll(){
+    mail.value = ''; exampleNote.textContent = ''; render();
+    try { window.scrollTo(0, 0); } catch(e){}
+  }
+  document.addEventListener('visibilitychange', function(){
+    if (document.visibilityState === 'hidden') wasHidden = true;
+    else if (wasHidden){ wasHidden = false; resetAll(); }
+  });
+  window.addEventListener('pageshow', function(e){ if (e.persisted) resetAll(); });
+
   syncSettings();
   render();
 })();
+  try { if ('serviceWorker' in navigator && location.protocol.indexOf('http') === 0) navigator.serviceWorker.register('sw.js'); } catch(e){}
 </script>
-
-</body></html>
+</body>
+</html>
