@@ -1,0 +1,697 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Ma tournée</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@600;700&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Layout: one narrow column, built for a phone held in one hand.
+   Input on top, the decoded tour as a dispatch slip below, store list tucked in a drawer at the bottom. */
+:root{
+  --bg:#EBEFF2;
+  --surface:#FFFFFF;
+  --ink:#13202B;
+  --muted:#586774;
+  --line:#CBD4DB;
+  --accent:#1A5DA6;
+  --accent-ink:#FFFFFF;
+  --need-bg:#E6F0FA;
+  --need-ink:#10345C;
+  --need-line:#7AA7D6;
+  --im:#E2001A;--im-ink:#FFFFFF;--im-tint:#FDE9EB;
+  --ne:#FFD500;--ne-ink:#1A1A1A;--ne-tint:#FFF6C2;
+  --ba:#3F4E5C;--ba-ink:#FFFFFF;--ba-tint:#E1E7EC;
+  --display:'Barlow Condensed','Arial Narrow',sans-serif;
+  --body:'Barlow',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --mono:'IBM Plex Mono',ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0E161D;--surface:#17232C;--ink:#E8EEF2;--muted:#93A3B0;--line:#2C3B47;
+    --accent:#6FB0F0;--accent-ink:#0E161D;--need-bg:#11273D;--need-ink:#BBD9F5;--need-line:#3D6C9C;--im:#E2001A;--im-ink:#FFFFFF;--im-tint:#3A171B;--ne:#FFD500;--ne-ink:#1A1A1A;--ne-tint:#3A3410;--ba:#5E7184;--ba-ink:#FFFFFF;--ba-tint:#222F3A;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0E161D;--surface:#17232C;--ink:#E8EEF2;--muted:#93A3B0;--line:#2C3B47;
+  --accent:#6FB0F0;--accent-ink:#0E161D;--need-bg:#11273D;--need-ink:#BBD9F5;--need-line:#3D6C9C;--im:#E2001A;--im-ink:#FFFFFF;--im-tint:#3A171B;--ne:#FFD500;--ne-ink:#1A1A1A;--ne-tint:#3A3410;--ba:#5E7184;--ba-ink:#FFFFFF;--ba-tint:#222F3A;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{
+  background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.45;
+  padding-block:20px 40px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));
+  padding-right:max(16px,env(safe-area-inset-right,0px));
+}
+.wrap{max-width:34rem;margin:0 auto;display:flex;flex-direction:column;gap:20px}
+h1{font-family:var(--display);font-weight:700;font-size:2rem;line-height:1.05;margin:0;text-wrap:balance;letter-spacing:.01em}
+h2{font-family:var(--display);font-weight:700;font-size:1.25rem;margin:0;letter-spacing:.04em;text-transform:uppercase}
+.lede{margin:6px 0 0;color:var(--muted);max-width:60ch}
+label,.label{font-size:.78rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+textarea,input[type=text]{
+  font:inherit;font-size:16px;color:var(--ink);background:var(--surface);
+  border:1px solid var(--line);border-radius:6px;padding:10px 12px;width:100%;min-width:0;
+}
+textarea{font-family:var(--mono);font-size:16px;line-height:1.5;resize:vertical;min-height:7.5rem}
+textarea:focus-visible,input:focus-visible,button:focus-visible,summary:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.field{display:flex;flex-direction:column;gap:6px}
+button{
+  font:inherit;font-weight:600;font-size:15px;min-height:44px;padding:0 16px;border-radius:6px;cursor:pointer;
+  border:1px solid var(--line);background:var(--surface);color:var(--ink);
+}
+button.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.note{font-size:.85rem;color:var(--muted);margin:0}
+
+.tour{background:var(--surface);border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.tour-head{padding:12px 16px;background:var(--ink);color:var(--bg)}
+.tour-no{margin:0;font-family:var(--display);font-weight:700;font-size:1.8rem;line-height:1.1;letter-spacing:.06em;text-transform:uppercase}
+.tour-no small{font-size:.95rem;font-weight:600;letter-spacing:.04em;opacity:.75;margin-left:8px}
+.who{margin:2px 0 0;font-size:.85rem;opacity:.8;min-width:0;overflow-wrap:anywhere}
+.head-row{display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:4px 12px}
+.badge{font-family:var(--display);font-weight:700;font-size:1.3rem;letter-spacing:.02em}
+.badge.none{font-family:var(--body);font-weight:500;font-size:.85rem;letter-spacing:0;opacity:.75}
+#out{display:flex;flex-direction:column;gap:24px}
+.tournav{display:flex;flex-wrap:wrap;gap:8px}
+.tournav button{min-height:40px}
+.voyage{margin:2px 0 0;font-size:.85rem;color:var(--muted)}
+.stats{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr) minmax(0,1fr);gap:0;margin:0}
+.stat{padding:12px 16px;min-width:0}
+.stat+.stat{border-left:1px solid var(--line)}
+.stat dt{font-size:.72rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.stat dd{margin:2px 0 0;font-family:var(--display);font-weight:700;font-size:2rem;line-height:1.1;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.stat dd small{display:block;font-family:var(--mono);font-weight:500;font-size:.75rem;color:var(--muted)}
+.stat dd.text{font-size:1.45rem}
+.tour-section{padding:14px 16px 16px;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:12px}
+.stops-head{display:flex;justify-content:space-between;align-items:baseline;gap:12px}
+.stops-head span{font-size:.85rem;color:var(--muted)}
+ol.stops{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.stop{--brand:var(--ba);--brand-ink:var(--ba-ink);--tint:var(--ba-tint);display:grid;grid-template-columns:2.25rem minmax(0,1fr) auto;gap:8px 12px;align-items:center;padding:8px 10px 8px 8px;border-radius:6px;background:var(--tint)}
+.stop.im{--brand:var(--im);--brand-ink:var(--im-ink);--tint:var(--im-tint)}
+.stop.ne{--brand:var(--ne);--brand-ink:var(--ne-ink);--tint:var(--ne-tint)}
+.stop.unk{--brand:var(--muted);--brand-ink:var(--surface);--tint:var(--bg)}
+.rank{display:grid;place-items:center;width:2.25rem;height:2.25rem;border-radius:5px;background:var(--brand);color:var(--brand-ink);font-family:var(--display);font-weight:700;font-size:1.3rem;font-variant-numeric:tabular-nums}
+.pill{display:inline-block;font-size:.72rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;line-height:1.5;padding:1px 8px;border-radius:3px;background:var(--brand,var(--ba));color:var(--brand-ink,var(--ba-ink))}
+.pill.im{--brand:var(--im);--brand-ink:var(--im-ink)}
+.pill.ne{--brand:var(--ne);--brand-ink:var(--ne-ink)}
+.pill.ba{--brand:var(--ba);--brand-ink:var(--ba-ink)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.group{display:flex;flex-direction:column;gap:8px}
+.group+.group{border-top:2px dashed var(--line);padding-top:16px;margin-top:4px}
+.group-head{margin:0;font-family:var(--display);font-weight:700;font-size:1.15rem;letter-spacing:.06em;text-transform:uppercase}
+.pill.mixte{background:transparent;color:var(--ink);border:1.5px solid var(--ink);margin-left:6px;padding:0 7px}
+.mixte-note{display:block;font-size:.85rem;color:var(--muted)}
+.pill.revisit{background:var(--ink);color:var(--surface);margin-right:6px}
+.pdv-note{display:block;font-size:.9rem;font-weight:500;color:var(--ink);margin-top:2px;overflow-wrap:anywhere}
+.ville{display:block;font-weight:600;font-size:1.1rem;color:var(--ink);overflow-wrap:anywhere}
+
+.num{font-family:var(--mono);font-weight:500;font-size:.85rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.unknown{grid-column:2 / -1;background:var(--need-bg);color:var(--need-ink);border:1px solid var(--need-line);border-radius:6px;padding:10px;display:flex;flex-direction:column;gap:8px}
+.unknown p{margin:0;font-size:.9rem;font-weight:500}
+.unknown .row{gap:8px}
+.unknown input{flex:1 1 9rem}
+.unknown button{flex:0 0 auto}
+.contacts{margin:0;font-size:.9rem;color:var(--muted);overflow-wrap:anywhere}
+.empty{background:var(--surface);border:1px dashed var(--line);border-radius:8px;padding:16px;margin:0;color:var(--muted)}
+
+details.settings{background:var(--surface);border:1px solid var(--line);border-radius:8px}
+details.settings summary{cursor:pointer;padding:14px 16px;font-weight:600;min-height:44px}
+.settings-body{padding:0 16px 16px;display:flex;flex-direction:column;gap:16px}
+@media (prefers-reduced-motion: no-preference){
+  .tour{animation:rise .25s ease-out}
+  @keyframes rise{from{transform:translateY(6px)}to{transform:none}}
+}
+</style>
+
+<main class="wrap">
+  <header>
+    <h1>Ma tournée</h1>
+    <p class="lede">Collez le mail de la tournée. L'enseigne et la ville de chaque magasin, l'heure de départ, le tracteur et le chargement s'affichent.</p>
+  </header>
+
+  <section class="field">
+    <label for="mail">Mail de la tournée</label>
+    <textarea id="mail" rows="6" spellcheck="false" autocapitalize="off" autocomplete="off"></textarea>
+    <div class="row">
+      <button type="button" id="clear">Effacer</button>
+      <p class="note" id="exampleNote">Exemple affiché. Collez votre mail pour le remplacer.</p>
+    </div>
+  </section>
+
+  <section id="out" aria-live="polite"></section>
+
+  <details class="settings" id="settings">
+    <summary>Mes magasins et mes chargements</summary>
+    <div class="settings-body">
+      <div class="field">
+        <label for="storesBox">Magasins et lieux (un par ligne : numéro ou texte du mail;enseigne;ville)</label>
+        <textarea id="storesBox" rows="8" spellcheck="false" autocapitalize="off" placeholder="04371;Enseigne;Ville"></textarea>
+      </div>
+      <div class="field">
+        <label for="loadsBox">Chargements (un par ligne : code;nom)</label>
+        <textarea id="loadsBox" rows="3" spellcheck="false" autocapitalize="off" placeholder="F;Nom du chargement"></textarea>
+      </div>
+      <div class="row">
+        <button type="button" class="primary" id="saveSettings">Enregistrer</button>
+        <button type="button" id="copySettings">Copier les deux listes</button>
+        <p class="note" id="settingsNote"></p>
+      </div>
+      <p class="note">Les listes sont gardées dans ce navigateur, sur cet appareil. Copiez-les de temps en temps dans Notes pour ne pas les perdre.</p>
+    </div>
+  </details>
+</main>
+
+<script>
+(function(){
+  var SAMPLE = "AUVRAY Rémi : Tracteur : 121\nHeure Départ : 00h01 : F : 04371-50172-50291-04106-04376-10910-04854\nN° Voyage :\nContacter ENTA Erbrée 02.99.49.90.46 Neulliac 02.97.08.60.85";
+  var K_STORES = 'tournee.stores', K_LOADS = 'tournee.loads';
+
+  function load(k){ try { var v = localStorage.getItem(k); return v ? JSON.parse(v) : {}; } catch(e){ return {}; } }
+  function save(k,o){ try { localStorage.setItem(k, JSON.stringify(o)); } catch(e){} }
+
+  // Liste PDV chauffeurs (mise à jour du 12-09-2024). I = Intermarché, N = Netto.
+  var DEFAULT_STORES_TXT = `
+N 01538 BREST
+I 01324 PONT AVEN
+I 01336 PLEYBEN
+I 01354 BREST
+I 01661 LAMBALLE
+I 01714 GUERLÉDAN
+I 01899 CONCARNEAU
+N 01934 CAUDAN
+I 02242 LANNION
+I 02256 ST EVARZEC
+N 02864 LOUDEAC
+I 02944 PLOUZANE
+N 03489 CARHAIX
+I 03884 ILE DE GROIX
+I 04020 PLOUEZEC
+I 04106 PLOUHINEC
+I 04109 RIEUX
+I 04110 PRIMELIN
+I 04114 GUINGAMP-ST AGATHON
+I 04121 PLOUESCAT
+I 04124 GUERANDE
+I 04125 PONTIVY
+I 04127 PLOMEUR
+I 04132 PONTIVY
+I 04138 GUEMENE/SCORFF
+I 04142 ST QUAY PERROS
+I 04148 VANNES
+I 04151 PLOUGUERNEAU
+I 04152 PLOULEC'H - LANNION
+I 04154 TREGUEUX
+N 04155 HERBIGNAC
+I 04169 DINARD
+N 04173 ST POL DE LEON
+I 04178 MELLAC
+I 04180 LANGUIDIC
+I 04190 PLOURIN LES MORLAIX
+I 04201 QUIMPERLE
+I 04211 TADEN
+I 04216 MONTAUBAN DE BRETAGNE
+I 04218 PORDIC
+I 04225 CALLAC
+I 04248 LORIENT
+I 04253 CHATEAULIN
+I 04261 PLABENNEC
+I 04269 PLOUGONVELIN
+I 04271 ROSTRENEN
+I 04274 ST MALO
+I 04324 PAIMPOL
+I 04334 SENE VANNES
+I 04350 PLOERMEL
+I 04371 BAUD
+I 04376 ERDEVEN
+I 04391 REDON
+I 04400 TREBEURDEN
+I 04419 MOELAN/MER
+I 04501 QUESTEMBERT
+I 04502 LORIENT
+I 04554 LANNION
+I 04557 GUER
+I 04615 PONTRIEUX
+I 04629 LORIENT
+I 04643 CARHAIX
+N 04658 ST MALO
+N 04660 ST QUAY PORTRIEUX
+I 04668 ARZON
+I 04705 DOUARNENEZ
+N 04717 BEGARD
+I 04742 LANDERNEAU
+I 04743 MINIHY-TREGUIER
+I 04788 ST MEEN LE GRAND
+I 04810 BRIEC DE L'ODET
+I 04823 BANNALEC
+I 04824 PLAINTEL
+I 04854 MORÉAC
+I 04912 MORLAIX
+I 04941 ST AVE
+I 05019 GOURIN
+I 05031 ST JEAN DE BREVELAY
+N 05209 ST AVE
+N 05279 NIVILLAC
+I 05289 QUESSOY
+N 05375 ST MALO
+N 05396 QUIMPER
+N 05496 FOUESNANT
+I 05788 TREMUSON
+I 05831 PLONEIS
+I 05832 SULNIAC
+I 05868 ST MARTIN DES CHAMPS
+I 05979 ST MELOIR DES ONDES
+N 05981 HENNEBONT
+N 05983 PLOUAY
+I 05986 SURZUR
+I 06041 CRAC'H
+I 06303 LOUARGAT
+N 06440 LESNEVEN
+N 06593 TREGUEUX
+N 06758 LANNION
+I 06900 BEGARD (LAN VEAR)
+I 06997 ROSPORDEN
+I 07001 LOUDEAC
+I 07002 HENNEBONT
+I 07345 ALLAIRE
+N 07496 PONT L'ABBE
+I 07655 PLELAN LE PETIT
+I 07799 ST LYPHARD
+I 07868 PLOEREN
+I 07898 RIANTEC
+I 08054 PLOUBEZRE
+N 08090 LORIENT (KERVENANEC)
+I 08179 ELVEN
+I 09641 BREST
+N 09987 VANNES
+I 10007 PLEURTUIT
+N 10047 PONTIVY
+I 10676 LA GACILLY
+I 10870 LE PALAIS
+I 10871 LESNEVEN
+I 10873 LORIENT
+I 10907 PLONEOUR LANVERN
+I 10910 QUIBERON
+I 10917 SARZEAU
+I 10926 TREGUNC
+I 11587 QUIMPER
+I 11592 CARNAC
+I 11598 QUIMPER
+I 11602 PLOUAY
+I 11911 PERROS GUIREC
+N 12010 LE FAOUET
+I 50129 HUELGOAT
+I 50160 MERNEL (MAURE DE B)
+I 50166 PLUMELIAU
+I 50169 PLOMODIERN
+I 50172 LANDEVANT
+I 50194 NOYAL PONTIVY
+I 50215 PLOZEVET
+I 50218 SERENT
+I 50219 REGUINY
+I 50235 BUBRY
+I 50247 PLOUZEVEDE
+I 50263 PLOEMEUR LOMENER
+I 50268 NEVEZ
+I 50282 PLUGUFFAN
+I 50291 MERLEVENEZ
+I 50296 PLENÉE JUGON
+I 50304 BROONS
+I 50326 PLOUGUENAST
+I 50341 CAULNES
+N 55035 LORIENT
+N 55048 VANNES
+N 55062 MORLAIX
+N 55106 QUIMPER
+N 55109 LANESTER
+N 55155 SENE
+N 55156 LANGUEUX
+N 55165 CONCARNEAU
+N 55196 PLOERMEL
+N 55248 DOUARNENEZ
+`;
+  var defaultStores = {};
+  DEFAULT_STORES_TXT.split('\n').forEach(function(line){
+    var m = line.match(/^([IN]) (\d+) (.+)$/);
+    if (m) defaultStores[m[2].replace(/^0+/,'') || '0'] = { enseigne: m[1] === 'N' ? 'Netto' : 'Intermarché', ville: m[3].trim() };
+  });
+  defaultStores['BC GF REC ITB'] = { enseigne:'Base', ville:'Grand Fougeray · récupérer ITB' };
+  var stores = Object.assign({}, defaultStores, load(K_STORES));   // { "4371": {enseigne, ville} }
+  var DEFAULT_LOADS = { F:'Frais', S:'Sec', G:'Gel' };
+  var loads  = Object.assign({}, DEFAULT_LOADS, load(K_LOADS));    // { "F": "nom" }
+
+  var mail = document.getElementById('mail');
+  var out = document.getElementById('out');
+  var exampleNote = document.getElementById('exampleNote');
+  var storesBox = document.getElementById('storesBox');
+  var loadsBox = document.getElementById('loadsBox');
+  var settingsNote = document.getElementById('settingsNote');
+  var isExample = true;
+
+  function h(tag, cls, text){
+    var e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (text != null) e.textContent = text;
+    return e;
+  }
+  function keyOf(raw){
+    raw = String(raw).trim();
+    if (/^\d+$/.test(raw)) return raw.replace(/^0+/,'') || '0';
+    return raw.normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/\s+/g,' ').toUpperCase();
+  }
+  function brandOf(info){
+    if (!info) return 'unk';
+    var e = String(info.enseigne).normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase();
+    if (e.indexOf('intermarche') >= 0) return 'im';
+    if (e.indexOf('netto') >= 0) return 'ne';
+    return 'ba';
+  }
+  function pad5(k){ return (/^\d+$/.test(k) && k.length < 5) ? ('00000'+k).slice(-5) : k; }
+
+  /* ---------- lecture du mail ---------- */
+  function parseBlock(head, lines){
+    var t = lines.join('\n');
+    var tour = { driver:'', tractor:'', time:'', loadCode:'', stores:[], extras:[], groups:[], voyage:'', contacts:'' };
+
+    var first = head || lines[0] || '';
+    var di = first.search(/Tracteur/i);
+    if (di > 0) tour.driver = first.slice(0, di).replace(/[\s:;-]+$/,'').trim();
+    var m = (head || t).match(/Tracteur\s*:?\s*([A-Za-z0-9\-]+)/i);
+    if (m) tour.tractor = m[1];
+
+    var tm = t.match(/D[ée]part\s*:?\s*(\d{1,2})\s*[hH:]\s*(\d{2})/);
+    if (tm){
+      tour.time = ('0'+tm[1]).slice(-2) + 'h' + tm[2];
+      var rest = t.slice(tm.index + tm[0].length);
+      var rl = rest.split(/\r?\n/);
+      var list = rl[0];
+      for (var j = 1; j < rl.length && /^[\s\d,;\/\-+()Mm]+$/.test(rl[j]) && /\d/.test(rl[j]); j++) list += '-' + rl[j];
+      list = list.replace(/^\s*:?\s*/, '');
+      list = list.replace(/^Tour\s*:\s*/i, '');
+      var rm = list.match(/^([A-Za-z]{1,12})\s*:\s*/);
+      if (rm){ tour.loadCode = rm[1].toUpperCase(); list = list.slice(rm[0].length); }
+      var pendingM = false;
+      list.split('+').forEach(function(g){
+        var nums = [];
+        g.split(/[-,;]+/).forEach(function(tok){
+          tok = tok.replace(/\(\s*\d+\s*\)/g, ' ');
+          var hasM = /\(\s*M\s*\)/i.test(tok);
+          var mAt = tok.search(/\(\s*M\s*\)/i);
+          var digitAt = tok.search(/\d/);
+          var s = tok.replace(/\(\s*M\s*\)/gi, ' ').trim();
+          if (!s){
+            if (hasM){ if (nums.length) nums[nums.length-1].m = true; else pendingM = true; }
+            return;
+          }
+          var added = [];
+          function mk(raw, note, revisit){
+            var it = { raw:raw, m:false, note:note || '', revisit:revisit || '' };
+            if (pendingM){ it.m = true; pendingM = false; }
+            nums.push(it); added.push(it); return it;
+          }
+          var rv = s.match(/^([A-Za-z\u00C0-\u00FF][^\d]*?)\s*(\d{4,6})\b\s*(.*)$/);
+          var nt = s.match(/^(\d+)\s+(\S.*)$/);
+          if (rv){
+            mk(rv[2], rv[3].trim(), rv[1].replace(/[\s:.\-]+$/,'').trim());
+          } else if (/^[\d\s\/]+$/.test(s)){
+            s.split(/[\s\/]+/).forEach(function(x){ if (x) mk(x); });
+          } else if (nt && /[A-Za-z\u00C0-\u00FF]/.test(nt[2])){
+            mk(nt[1], nt[2].trim());
+          } else {
+            tour.extras.push(s);
+          }
+          if (hasM && added.length){
+            if (digitAt >= 0 && mAt < digitAt) added[0].m = true; else added[added.length-1].m = true;
+          }
+        });
+        if (nums.length) tour.groups.push(nums);
+      });
+      // Un repassage (« vides 03884 ») placé après un « + » reste dans la liste, à la suite : ce n'est pas une nouvelle partie.
+      var merged = [];
+      tour.groups.forEach(function(g){
+        var onlyRevisit = g.every(function(it){ return it.revisit; });
+        if (onlyRevisit && merged.length) merged[merged.length-1] = merged[merged.length-1].concat(g);
+        else merged.push(g);
+      });
+      tour.groups = merged;
+      tour.stores = [].concat.apply([], tour.groups).map(function(it){ return it.raw; });
+    }
+
+    var vm = t.match(/N[°º]?[ \t]*Voyage[ \t]*:?[ \t]*([A-Za-z0-9\-]*)/i);
+    if (vm) tour.voyage = vm[1];
+
+    for (var i=0;i<lines.length;i++){
+      var cm = lines[i].match(/^\s*Contacter\s+(.*)$/i);
+      if (cm){ tour.contacts = cm[1].trim(); break; }
+    }
+    return tour;
+  }
+  // Un nouveau tour commence à chaque ligne « Heure Départ ». Le chauffeur et le tracteur viennent de la ligne « Tracteur » qui précède.
+  function parseTours(text){
+    var lines = text.split(/\r?\n/), tours = [], head = null, cur = null, sawHead = false;
+    lines.forEach(function(l){
+      var isHead = /Tracteur/i.test(l);
+      var isDep = /D[ée]part\s*:?\s*\d{1,2}\s*[hH:]\s*\d{2}/.test(l);
+      if (isHead){ head = l; sawHead = true; cur = null; }
+      if (isDep){ cur = { head: head, lines: [l] }; tours.push(cur); }
+      else if (cur && !isHead){ cur.lines.push(l); }
+    });
+    if (!tours.length && sawHead){
+      var blocks = [], c2 = null;
+      lines.forEach(function(l){ if (/Tracteur/i.test(l)){ c2 = [l]; blocks.push(c2); } else if (c2){ c2.push(l); } });
+      return blocks.map(function(b){ return parseBlock(b[0], b); });
+    }
+    var res = tours.map(function(t){ return parseBlock(t.head, t.lines); });
+    var shared = '';
+    res.forEach(function(r){ if (!shared && r.contacts) shared = r.contacts; });
+    res.forEach(function(r){ if (!r.contacts) r.contacts = shared; });
+    return res;
+  }
+
+  /* ---------- affichage ---------- */
+  function stat(label, value, extra, textual){
+    var wrap = h('div','stat');
+    wrap.appendChild(h('dt',null,label));
+    var dd = h('dd', textual ? 'text' : null, value);
+    if (extra){ dd.appendChild(h('small',null,extra)); }
+    wrap.appendChild(dd);
+    return wrap;
+  }
+
+  function loadNameFor(code){
+    if (!code) return '';
+    if (loads[code]) return loads[code];
+    var cs = code.split('');
+    if (cs.length > 1 && cs.every(function(c){ return loads[c]; })) return cs.map(function(c){ return loads[c]; }).join(' + ');
+    return '';
+  }
+
+  function renderTour(tour, index, total){
+    var card = h('article','tour');
+
+    var head = h('div','tour-head');
+    var top = h('div','head-row');
+    var no = h('p','tour-no', 'Tour' + (total > 1 ? ' ' + (index + 1) : ''));
+    if (total > 1) no.appendChild(h('small',null,'sur ' + total));
+    top.appendChild(no);
+    top.appendChild(h('span', tour.voyage ? 'badge' : 'badge none', tour.voyage ? 'Voyage n° ' + tour.voyage : 'Voyage non indiqué'));
+    head.appendChild(top);
+    if (tour.driver) head.appendChild(h('p','who', tour.driver));
+    card.appendChild(head);
+
+    var dl = h('dl','stats');
+    dl.appendChild(stat('Départ', tour.time || '?'));
+    dl.appendChild(stat('Tracteur', tour.tractor || '?'));
+    var loadName = loadNameFor(tour.loadCode);
+    if (tour.loadCode && loadName){
+      dl.appendChild(stat('Chargement', loadName, null, true));
+    } else {
+      dl.appendChild(stat('Chargement', tour.loadCode || '?'));
+    }
+    card.appendChild(dl);
+
+    if (tour.loadCode && !loadName){
+      var ls = h('div','tour-section');
+      var box = h('div','unknown');
+      box.appendChild(h('p',null,'Le code de chargement « ' + tour.loadCode + ' » n’a pas encore de nom.'));
+      var r = h('div','row');
+      var inp = h('input'); inp.type='text'; inp.id='loadName-'+tour.loadCode; inp.placeholder='Nom du chargement'; inp.setAttribute('aria-label','Nom du chargement ' + tour.loadCode);
+      var b = h('button',null,'Enregistrer'); b.type='button';
+      b.addEventListener('click', function(){
+        var v = inp.value.trim(); if (!v) { inp.focus(); return; }
+        loads[tour.loadCode] = v; save(K_LOADS, loads); syncSettings(); render();
+      });
+      r.appendChild(inp); r.appendChild(b); box.appendChild(r); ls.appendChild(box);
+      card.appendChild(ls);
+    }
+
+    // Texte du mail qui n'est pas un numéro (ex. BC GF rec ITB) : une ligne à part, jamais mêlée aux magasins
+    function buildStop(raw, label, mixed, it){
+      var key = keyOf(raw);
+      var info = stores[key];
+      var isNum = /^\d+$/.test(raw);
+      var li = h('li','stop ' + brandOf(info));
+      li.appendChild(h('span','rank', label || (info ? info.enseigne.charAt(0).toUpperCase() : '?')));
+      var main = h('div');
+      if (it && it.revisit) main.appendChild(h('span','pill revisit', it.revisit));
+      if (info){
+        main.appendChild(h('span','pill', info.enseigne));
+        if (mixed) main.appendChild(h('span','pill mixte','Mixte'));
+        main.appendChild(h('span','ville', info.ville));
+      } else {
+        if (mixed) main.appendChild(h('span','pill mixte','Mixte'));
+        main.appendChild(h('span','ville', isNum ? 'Magasin inconnu' : raw));
+      }
+      if (mixed) main.appendChild(h('span','mixte-note','Plusieurs types de marchandise'));
+      if (it && it.revisit) main.appendChild(h('span','pdv-note', /vide/i.test(it.revisit) ? 'Repasser pour r\u00E9cup\u00E9rer les vides' : 'Repasser dans ce point de vente'));
+      if (it && it.note) main.appendChild(h('span','pdv-note', it.note));
+      li.appendChild(main);
+      if (isNum) li.appendChild(h('span','num', raw));
+      if (!info){
+        var box = h('div','unknown');
+        box.appendChild(h('p',null,(isNum ? 'Le magasin ' + raw : '\u00AB ' + raw + ' \u00BB') + ' n\u2019est pas encore dans votre liste.'));
+        var r = h('div','row');
+        var safe = key.replace(/\W/g,'_');
+        var ie = h('input'); ie.type='text'; ie.id='ens-'+safe; ie.placeholder='Enseigne'; ie.setAttribute('aria-label','Enseigne de ' + raw);
+        var iv = h('input'); iv.type='text'; iv.id='ville-'+safe; iv.placeholder='Ville'; iv.setAttribute('aria-label','Ville de ' + raw);
+        var b = h('button',null,'Ajouter'); b.type='button';
+        b.addEventListener('click', function(){
+          var e = ie.value.trim(), v = iv.value.trim();
+          if (!e){ ie.focus(); return; }
+          if (!v){ iv.focus(); return; }
+          stores[key] = { enseigne:e, ville:v };
+          save(K_STORES, stores); syncSettings(); render();
+        });
+        r.appendChild(ie); r.appendChild(iv); r.appendChild(b);
+        box.appendChild(r);
+        li.appendChild(box);
+      }
+      return li;
+    }
+
+    if (tour.extras.length){
+      var xs = h('div','tour-section');
+      var xo = h('ol','stops');
+      tour.extras.forEach(function(raw){ xo.appendChild(buildStop(raw, '')); });
+      xs.appendChild(xo);
+      card.appendChild(xs);
+    }
+
+    var sec = h('div','tour-section');
+    if (tour.stores.length || !tour.extras.length){
+      var sh = h('div','stops-head');
+      sh.appendChild(h('h2',null,'Magasins, dans l\u2019ordre'));
+      sh.appendChild(h('span',null, tour.stores.length + (tour.stores.length > 1 ? ' arrêts' : ' arrêt')));
+      sec.appendChild(sh);
+      if (!tour.stores.length){
+        sec.appendChild(h('p','note','Aucun numéro de magasin trouvé après l\u2019heure de départ.'));
+      } else {
+        var many = tour.groups.length > 1;
+        tour.groups.forEach(function(g, gi){
+          var gbox = h('div','group');
+          if (many) gbox.appendChild(h('p','group-head','Partie ' + (gi+1) + ' \u00B7 ' + g.length + (g.length > 1 ? ' arrêts' : ' arrêt')));
+          var ol = h('ol','stops');
+          g.forEach(function(it, i){ ol.appendChild(buildStop(it.raw, String(i+1), it.m, it)); });
+          gbox.appendChild(ol);
+          sec.appendChild(gbox);
+        });
+      }
+    }
+    if (tour.contacts){
+      sec.appendChild(h('p','contacts','Contacts : ' + tour.contacts));
+    }
+    if (sec.childNodes.length) card.appendChild(sec);
+    return card;
+  }
+
+  function render(){
+    out.textContent = '';
+    var text = mail.value;
+    if (!text.trim()){
+      out.appendChild(h('p','empty','Collez le mail de votre tournée dans la zone ci-dessus.'));
+      return;
+    }
+    var tours = parseTours(text);
+    if (!tours.length){
+      out.appendChild(h('p','empty','Aucune tournée reconnue. Le mail doit contenir « Tracteur » et « Heure Départ ».'));
+      return;
+    }
+    var cards = tours.map(function(t, i){ return renderTour(t, i, tours.length); });
+    if (tours.length > 1){
+      var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      var nav = h('nav','tournav'); nav.setAttribute('aria-label','Aller à un tour');
+      tours.forEach(function(t, i){
+        var bt = h('button',null,'Tour ' + (i+1) + (t.time ? ' \u00B7 ' + t.time : '')); bt.type = 'button';
+        bt.addEventListener('click', function(){ cards[i].scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' }); });
+        nav.appendChild(bt);
+      });
+      out.appendChild(nav);
+    }
+    cards.forEach(function(c){ out.appendChild(c); });
+  }
+
+  /* ---------- listes enregistrées ---------- */
+  function storesToText(){
+    return Object.keys(stores).sort(function(a,b){ return a.length - b.length || (a < b ? -1 : 1); })
+      .map(function(k){ return pad5(k) + ';' + stores[k].enseigne + ';' + stores[k].ville; }).join('\n');
+  }
+  function loadsToText(){
+    return Object.keys(loads).sort().map(function(k){ return k + ';' + loads[k]; }).join('\n');
+  }
+  function syncSettings(){
+    storesBox.value = storesToText();
+    loadsBox.value = loadsToText();
+  }
+  function flash(msg){
+    settingsNote.textContent = msg;
+    setTimeout(function(){ settingsNote.textContent = ''; }, 3500);
+  }
+
+  document.getElementById('saveSettings').addEventListener('click', function(){
+    var s = {}, l = {}, bad = 0;
+    storesBox.value.split(/\r?\n/).forEach(function(line){
+      if (!line.trim()) return;
+      var p = line.split(/[;\t]/).map(function(x){ return x.trim(); });
+      if (p.length < 3 || !p[0] || !p[1] || !p[2]){ bad++; return; }
+      s[keyOf(p[0])] = { enseigne:p[1], ville:p.slice(2).join(' ') };
+    });
+    loadsBox.value.split(/\r?\n/).forEach(function(line){
+      if (!line.trim()) return;
+      var p = line.split(/[;\t]/).map(function(x){ return x.trim(); });
+      if (p.length < 2 || !p[0] || !p[1]){ bad++; return; }
+      l[p[0].toUpperCase()] = p.slice(1).join(' ');
+    });
+    stores = s; loads = l; save(K_STORES, stores); save(K_LOADS, loads);
+    render();
+    flash(bad ? ('Enregistré. ' + bad + ' ligne(s) ignorée(s), il manque un champ.') : 'Enregistré.');
+  });
+
+  document.getElementById('copySettings').addEventListener('click', function(){
+    var txt = 'MAGASINS\n' + storesToText() + '\n\nCHARGEMENTS\n' + loadsToText();
+    function fallback(){
+      var ta = document.createElement('textarea'); ta.value = txt; ta.style.position='fixed'; ta.style.opacity='0';
+      document.body.appendChild(ta); ta.select();
+      var ok = false; try { ok = document.execCommand('copy'); } catch(e){}
+      document.body.removeChild(ta);
+      flash(ok ? 'Copié.' : 'Copie impossible ici. Sélectionnez le texte à la main.');
+    }
+    try {
+      navigator.clipboard.writeText(txt).then(function(){ flash('Copié.'); }, fallback);
+    } catch(e){ fallback(); }
+  });
+
+  /* ---------- saisie ---------- */
+  mail.value = SAMPLE;
+  mail.addEventListener('focus', function(){ if (isExample) { mail.select(); } });
+  mail.addEventListener('input', function(){
+    if (isExample){ isExample = false; exampleNote.textContent = ''; }
+    render();
+  });
+  document.getElementById('clear').addEventListener('click', function(){
+    mail.value = ''; isExample = false; exampleNote.textContent = ''; render(); mail.focus();
+  });
+
+  syncSettings();
+  render();
+})();
+</script>
+
+</body></html>
